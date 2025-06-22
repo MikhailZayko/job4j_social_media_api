@@ -1,5 +1,6 @@
 package ru.job4j.socialmedia.repository;
 
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -8,7 +9,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
+import ru.job4j.socialmedia.model.Image;
 import ru.job4j.socialmedia.model.Post;
+import ru.job4j.socialmedia.model.Subscription;
 import ru.job4j.socialmedia.model.User;
 
 import java.time.LocalDateTime;
@@ -25,7 +28,10 @@ public class PostRepositoryTest {
     private PostRepository postRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private ImageRepository imageRepository;
+
+    @Autowired
+    private EntityManager entityManager;
 
     private User author1;
 
@@ -41,18 +47,16 @@ public class PostRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        postRepository.deleteAll();
-        userRepository.deleteAll();
         author1 = new User();
         author1.setUsername("author1");
         author1.setEmail("author1@example.com");
         author1.setPassword("pass");
-        userRepository.save(author1);
+        entityManager.persist(author1);
         author2 = new User();
         author2.setUsername("author2");
         author2.setEmail("author2@example.com");
         author2.setPassword("pass");
-        userRepository.save(author2);
+        entityManager.persist(author2);
         LocalDateTime now = LocalDateTime.now();
         post1 = createPost("Title 1", "Content 1", author1, now.minusDays(3));
         post2 = createPost("Title 2", "Content 2", author1, now.minusDays(2));
@@ -67,6 +71,20 @@ public class PostRepositoryTest {
         post.setUser(user);
         post.setCreated(created);
         return postRepository.save(post);
+    }
+
+    private void createImage(String filePath, Post post) {
+        Image image = new Image();
+        image.setFilePath(filePath);
+        image.setPost(post);
+        imageRepository.save(image);
+    }
+
+    private void createSubscription(User subscriber, User target) {
+        Subscription subscription = new Subscription();
+        subscription.setSubscriber(subscriber);
+        subscription.setTarget(target);
+        entityManager.persist(subscription);
     }
 
     @Test
@@ -116,5 +134,53 @@ public class PostRepositoryTest {
                 .hasSize(2)
                 .extracting(Post::getTitle)
                 .containsExactly("Title 2", "Title 1");
+    }
+
+    @Test
+    void whenDeletePostWithImagesThenPostAndImagesDeleted() {
+        createImage("/images/post1-1.jpg", post1);
+        createImage("/images/post1-2.jpg", post1);
+        List<Image> imagesBeforeDelete = imageRepository.findByPostId(post1.getId());
+        assertThat(imagesBeforeDelete)
+                .hasSize(2)
+                .extracting(Image::getFilePath)
+                .containsExactlyInAnyOrder(
+                        "/images/post1-1.jpg",
+                        "/images/post1-2.jpg"
+                );
+        postRepository.deleteByPostId(post1.getId());
+        assertThat(postRepository.findById(post1.getId())).isEmpty();
+        List<Image> imagesAfterDelete = imageRepository.findByPostId(post1.getId());
+        assertThat(imagesAfterDelete).isEmpty();
+        assertThat(postRepository.findById(post2.getId())).isPresent();
+        assertThat(postRepository.findById(post3.getId())).isPresent();
+        assertThat(postRepository.findById(post4.getId())).isPresent();
+    }
+
+    @Test
+    void whenUpdateTitleAndContentThenPostUpdated() {
+        postRepository.updateTitleAndContent(
+                post1.getId(),
+                "Updated Title",
+                "Updated Content"
+        );
+        Post updatedPost = postRepository.findById(post1.getId()).orElseThrow();
+        assertThat(updatedPost.getTitle()).isEqualTo("Updated Title");
+        assertThat(updatedPost.getContent()).isEqualTo("Updated Content");
+    }
+
+    @Test
+    void whenFindPostsBySubscribedUsersThenReturnSubscribedPosts() {
+        User subscriber = author1;
+        User target = author2;
+        createSubscription(subscriber, target);
+        Page<Post> result = postRepository.findPostsBySubscribedUsers(
+                subscriber.getId(),
+                Pageable.unpaged()
+        );
+        assertThat(result.getContent())
+                .hasSize(1)
+                .extracting(Post::getTitle)
+                .containsExactly("Title 3");
     }
 }
