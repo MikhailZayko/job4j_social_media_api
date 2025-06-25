@@ -1,13 +1,15 @@
 package ru.job4j.socialmedia.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import ru.job4j.socialmedia.dto.user.UserCreateDto;
 import ru.job4j.socialmedia.dto.user.UserReadDto;
 import ru.job4j.socialmedia.dto.user.UserUpdateDto;
 import ru.job4j.socialmedia.service.user.UserService;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api/user")
@@ -25,18 +27,32 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserReadDto> save(@RequestBody UserCreateDto userCreateDto) {
-        return ResponseEntity.ok(userService.create(userCreateDto));
+        UserReadDto createdUser = userService.create(userCreateDto);
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(createdUser.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(createdUser);
     }
 
-    @PutMapping
-    @ResponseStatus(HttpStatus.OK)
-    public void update(@RequestBody UserUpdateDto userUpdateDto) {
-        userService.update(userUpdateDto);
+    @PatchMapping
+    public ResponseEntity<Void> update(@RequestBody UserUpdateDto userUpdateDto) {
+        try {
+            userService.update(userUpdateDto);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{userId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeById(@PathVariable Integer userId) {
-        userService.deleteById(userId);
+    public ResponseEntity<Void> removeById(@PathVariable Integer userId) {
+        try {
+            userService.deleteById(userId);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

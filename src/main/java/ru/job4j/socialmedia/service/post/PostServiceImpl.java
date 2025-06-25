@@ -64,6 +64,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void deleteById(Integer postId) {
+        postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
         postRepository.deleteByPostId(postId);
     }
 

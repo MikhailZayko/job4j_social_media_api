@@ -2,6 +2,7 @@ package ru.job4j.socialmedia.service.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.job4j.socialmedia.dto.user.UserCreateDto;
 import ru.job4j.socialmedia.dto.user.UserReadDto;
 import ru.job4j.socialmedia.dto.user.UserUpdateDto;
@@ -13,6 +14,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -42,6 +44,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteById(Integer id) {
+        userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
         userRepository.deleteById(id);
     }
 }
