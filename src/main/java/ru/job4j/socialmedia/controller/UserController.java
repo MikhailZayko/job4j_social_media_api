@@ -38,21 +38,13 @@ public class UserController {
 
     @PatchMapping
     public ResponseEntity<Void> update(@RequestBody UserUpdateDto userUpdateDto) {
-        try {
             userService.update(userUpdateDto);
             return ResponseEntity.ok().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
     }
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<Void> removeById(@PathVariable Integer userId) {
-        try {
             userService.deleteById(userId);
             return ResponseEntity.ok().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
     }
 }

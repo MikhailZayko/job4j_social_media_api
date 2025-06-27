@@ -2,6 +2,7 @@ package ru.job4j.socialmedia.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -40,4 +41,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
         ORDER BY p.created DESC
     """)
     Page<Post> findPostsBySubscribedUsers(@Param("userId") Integer userId, Pageable pageable);
+
+    @EntityGraph(attributePaths = "user")
+    List<Post> findByUserIdIn(List<Integer> userIds);
 }

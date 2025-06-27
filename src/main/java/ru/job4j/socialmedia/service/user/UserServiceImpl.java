@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.job4j.socialmedia.dto.user.UserCreateDto;
 import ru.job4j.socialmedia.dto.user.UserReadDto;
 import ru.job4j.socialmedia.dto.user.UserUpdateDto;
+import ru.job4j.socialmedia.exception.NotFoundException;
 import ru.job4j.socialmedia.mapper.UserMapper;
 import ru.job4j.socialmedia.model.User;
 import ru.job4j.socialmedia.repository.UserRepository;
@@ -37,7 +38,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void update(UserUpdateDto userUpdateDto) {
         User existing = userRepository.findById(userUpdateDto.getId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new NotFoundException(User.class, userUpdateDto.getId()));
         userMapper.updateFromDto(userUpdateDto, existing);
         userRepository.save(existing);
     }
@@ -45,7 +46,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteById(Integer id) {
         userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new NotFoundException(User.class, id));
         userRepository.deleteById(id);
     }
 }

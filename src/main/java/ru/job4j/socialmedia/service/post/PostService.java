@@ -3,6 +3,7 @@ package ru.job4j.socialmedia.service.post;
 import ru.job4j.socialmedia.dto.post.PostCreateDto;
 import ru.job4j.socialmedia.dto.post.PostReadDto;
 import ru.job4j.socialmedia.dto.post.PostUpdateDto;
+import ru.job4j.socialmedia.dto.userpost.UserPostsDto;
 import ru.job4j.socialmedia.model.Image;
 import ru.job4j.socialmedia.model.Post;
 
@@ -24,4 +25,6 @@ public interface PostService {
     void deleteById(Integer postId);
 
     Optional<PostReadDto> findById(Integer postId);
+
+    List<UserPostsDto> findUsersWithPostsByUserIds(List<Integer> userIds);
 }
