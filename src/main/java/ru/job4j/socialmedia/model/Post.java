@@ -1,5 +1,6 @@
 package ru.job4j.socialmedia.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 @Table(name = "posts")
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Schema(description = "Post entity containing user-generated content")
 public class Post {
 
     @Id

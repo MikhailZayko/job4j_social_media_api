@@ -1,5 +1,6 @@
 package ru.job4j.socialmedia.controller;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.ConstraintViolationException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,10 +22,12 @@ import java.util.List;
 @RestControllerAdvice
 @AllArgsConstructor
 @Slf4j
+@Schema(description = "Global exception handler for REST controllers")
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @Schema(description = "Handles database integrity violations")
     public ExceptionResponse handleDataIntegrityViolation(DataIntegrityViolationException e, HttpServletRequest request) {
         log.error("DataIntegrityViolation: {}", e.getMessage());
         return new ExceptionResponse(
@@ -37,6 +40,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
+    @Schema(description = "Handles resource not found errors")
     public ExceptionResponse handleNotFound(NotFoundException e, HttpServletRequest request) {
         log.error("NotFoundException: {}", e.getMessage());
         return new ExceptionResponse(
@@ -49,6 +53,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @Schema(description = "Handles request parameter validation errors")
     public ValidationErrorResponse onConstraintValidationException(ConstraintViolationException e) {
         final List<Violation> violations = e.getConstraintViolations().stream()
                 .map(
@@ -64,6 +69,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @Schema(description = "Handles request body validation errors")
     public ValidationErrorResponse onMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         final List<Violation> violations = e.getBindingResult().getFieldErrors().stream()
                 .map(error -> new Violation(error.getField(), error.getDefaultMessage()))
