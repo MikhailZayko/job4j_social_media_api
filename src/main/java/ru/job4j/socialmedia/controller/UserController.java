@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -65,6 +66,7 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
     })
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserReadDto> save(@Valid @RequestBody UserCreateDto userCreateDto) {
         UserReadDto createdUser = userService.create(userCreateDto);
         URI location = ServletUriComponentsBuilder
@@ -87,6 +89,7 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
     @PatchMapping
+    @PreAuthorize("hasRole('ADMIN') or #userUpdateDto.id == authentication.principal.id")
     public ResponseEntity<Void> update(@Valid @RequestBody UserUpdateDto userUpdateDto) {
         userService.update(userUpdateDto);
         return ResponseEntity.ok().build();
@@ -104,6 +107,7 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
     @DeleteMapping("/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> removeById(@PathVariable
                                            @NotNull(message = "ID must not be null")
                                            @Positive(message = "resource number must be 1 or more")

@@ -14,9 +14,11 @@ public interface UserMapper {
     UserReadDto toDto(User user);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "roles", ignore = true)
     User toEntity(UserCreateDto dto);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "password", ignore = true)
+    @Mapping(target = "roles", ignore = true)
     void updateFromDto(UserUpdateDto dto, @MappingTarget User entity);
 }

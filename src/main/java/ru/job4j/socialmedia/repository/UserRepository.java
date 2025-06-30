@@ -33,4 +33,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
                 )
             """)
     List<User> findFriendsByUserId(@Param("userId") Integer userId);
+
+    Optional<User> findByUsername(String username);
+
+    Boolean existsByUsername(String username);
+
+    Boolean existsByEmail(String email);
 }

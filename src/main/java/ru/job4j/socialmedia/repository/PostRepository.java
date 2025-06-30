@@ -11,6 +11,7 @@ import ru.job4j.socialmedia.model.Post;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Integer> {
 
@@ -44,4 +45,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     @EntityGraph(attributePaths = "user")
     List<Post> findByUserIdIn(List<Integer> userIds);
+
+    @Query("SELECT p FROM Post p JOIN FETCH p.user WHERE p.id = :postId")
+    Optional<Post> findByIdWithUser(@Param("postId") int postId);
 }

@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -90,6 +91,7 @@ public class PostController {
                     content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
     @PatchMapping
+    @PreAuthorize("hasRole('ADMIN') or @postSecurityService.isAuthor(#postUpdateDto.id, authentication.name)")
     public ResponseEntity<Void> update(@Valid @RequestBody PostUpdateDto postUpdateDto) {
         postService.update(postUpdateDto);
         return ResponseEntity.ok().build();
@@ -107,6 +109,7 @@ public class PostController {
                     content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
     @DeleteMapping("/{postId}")
+    @PreAuthorize("hasRole('ADMIN') or @postSecurityService.isAuthor(#postId, authentication.name)")
     public ResponseEntity<Void> removeById(@PathVariable
                                            @NotNull(message = "ID must not be null")
                                            @Positive(message = "Resource number must be 1 or more")
